@@ -1,0 +1,19 @@
+#Ignore files build by IntelliJ
+.idea/
+*.iml
+*.iws
+
+#maven
+log/
+target/
+
+#eclipse
+.project
+.settings
+.tern-project
+.classpath
+
+CVS
+build
+dist
+out
