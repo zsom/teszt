@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -14,11 +16,14 @@ import org.apache.commons.lang3.StringUtils;
 
 public class AoC {
 	
+	private static HashSet<String> fel10TrailSet = new HashSet<String>();
+	private static int fel10AllTrailCnt = 0;
+	
 	public static void main(String[] args) {
 		System.out.println("Start");
 		
 		try {
-			fel9a();
+			fel11b();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -26,6 +31,195 @@ public class AoC {
 		System.out.println("Stop");
 	}
 	
+	private static void fel11b() {
+		String input = "125 17";
+		//String input = "5 62914 65 972 0 805922 6521 1639064";
+	
+		
+		int[] numCntList = new int[9000000];
+		Object[] numConvList = new Object[9000000];
+
+		
+		
+		numCntList[125] = 1;
+		numCntList[17] = 1;
+		
+		for(int blink = 1; blink <= 3; blink++) {
+			
+			for(int i = 0; i < numCntList.length; i++) {
+				Integer numCnt = numCntList[i];
+				
+				if(numCnt == 0) {
+					continue;
+				}
+				
+				Object object = numConvList[i];
+				
+				if(object == null) {
+					if(i == 0) {
+						numConvList[i] = 1;
+					} else if((i + "").length() % 2 == 0) {
+						String t = i + "";
+						numConvList[i] = t.substring(0, t.length() / 2) + "," + Long.parseLong(t.substring(t.length() / 2));
+					} else {
+						numConvList[i] = i * 2024;
+					}
+					
+					object = numConvList[i];
+				}
+				
+				if(object instanceof String) {
+					String[] convTexts = ((String)object).split(",");
+					numCntList[i] = 0;
+					Integer conv0 = Integer.parseInt(convTexts[0]);
+					numCntList[conv0] = numCntList[conv0] + numCnt;
+					Integer conv1 = Integer.parseInt(convTexts[0]);
+					numCntList[conv1] = numCntList[conv1] + numCnt;
+				} else {
+					//van már
+					int conv = (int)object;
+					numCntList[i] = 0;
+					numCntList[conv] = numCntList[conv] + numCnt;
+				}
+			}
+		}
+		
+		for(int i = 0; i < numCntList.length; i++) {
+			if(numCntList[i] > 0) {
+				System.out.println(i + " -> " + numCntList[i]);
+			}
+		}
+		
+		System.out.println();
+	}
+	
+	
+	
+	private static void fel11a() {
+		//String input = "125 17";
+		String input = "5 62914 65 972 0 805922 6521 1639064";
+		
+		ArrayList<String> stones = new ArrayList<String>(Arrays.asList(input.split(" ")));
+		ArrayList<String> newStones = new ArrayList<String>();
+		
+		for(int blink = 1; blink <= 75; blink++) {
+			System.out.println(blink + ". blink: " + stones.size());
+			for (String stone : stones) {
+				if("0".equals(stone)) {
+					newStones.add("1");
+				} else if(stone.length() % 2 == 0) {
+					newStones.add(stone.substring(0, stone.length() / 2));
+					newStones.add("" + Long.parseLong(stone.substring(stone.length() / 2)));
+				} else {
+					newStones.add(""+ (Long.parseLong(stone) * 2024));
+				}
+				
+			}
+			
+			stones.clear();
+			stones.addAll(newStones);
+			newStones.clear();
+			
+		}
+		
+		System.out.println("size: " + stones.size());
+	}
+
+	private static void fel10a() throws IOException {
+		List<String> lines = FileUtils.readLines(new File("d:\\temp\\aoc_10_input.txt"), "UTF-8");
+		
+		int xSize = lines.get(0).length();
+		int ySize = lines.size();
+		int[][] heightMatrix = new int[ySize][xSize];
+		
+		
+		for (int y = 0; y < ySize; y++) {
+			String line = lines.get(y);
+			
+			for (int x = 0; x < xSize; x++) {
+				char charAt = line.charAt(x);
+				int curr = charAt == '.' ? -1 : Integer.parseInt("" + charAt);
+				heightMatrix[y][x] = curr;
+			}
+		}
+		
+		//printMatrix(heightMatrix, xSize, ySize);
+		
+		int trailCnt = 0;
+		
+		for (int y = 0; y < ySize; y++) {
+			for (int x = 0; x < xSize; x++) {
+				if(heightMatrix[y][x] == 0) {
+					fel10TrailSet = new HashSet<String>();
+					fel10aMove(x, y, 0, heightMatrix, xSize, ySize);
+					System.out.println(x + "," + y + "->" + fel10TrailSet.size());
+					trailCnt += fel10TrailSet.size();
+				}
+			}
+		}
+		
+		System.out.println("fel10TrailCnt: " + trailCnt);
+		System.out.println("fel10AllTrailCnt: " + fel10AllTrailCnt);
+	}
+	
+	private static void fel10aMove(int x, int y, int nextValue, int[][] heightMatrix, int xSize, int ySize) {
+		nextValue++;
+		
+		if(fel10aValidMove(x + 1, y, nextValue, heightMatrix, xSize, ySize)) { //jobb
+			//System.out.println(x + "," + y + "; next: " + nextValue + "; jobb");
+			if(nextValue == 9) {
+				fel10TrailSet.add((x+1) + "," + y);
+				//System.out.println("OK - " + (x+1) + "," + y);
+				fel10AllTrailCnt++;
+			} else {
+				fel10aMove(x + 1, y, nextValue, heightMatrix, xSize, ySize);
+			}
+		}
+		
+		if(fel10aValidMove(x - 1, y, nextValue, heightMatrix, xSize, ySize)) { //bal
+			//System.out.println(x + "," + y + "; next: " + nextValue + "; bal");
+			if(nextValue == 9) {
+				fel10TrailSet.add((x-1) + "," + y);
+				//System.out.println("OK - " + (x-1) + "," + y);
+				fel10AllTrailCnt++;
+				
+			} else {
+				fel10aMove(x - 1, y, nextValue, heightMatrix, xSize, ySize);
+			}
+		}
+		
+		if(fel10aValidMove(x, y - 1, nextValue, heightMatrix, xSize, ySize)) { //fel
+			//System.out.println(x + "," + y + "; next: " + nextValue + "; fel");
+			if(nextValue == 9) {
+				fel10TrailSet.add((x) + "," + (y-1));
+				//System.out.println("OK - " + (x) + "," + (y - 1));
+				fel10AllTrailCnt++;
+			} else {
+				fel10aMove(x, y - 1, nextValue, heightMatrix, xSize, ySize);
+			}
+		}
+		
+		
+		if(fel10aValidMove(x, y + 1, nextValue, heightMatrix, xSize, ySize)) { //le
+			//System.out.println(x + "," + y + "; next: " + nextValue + "; le");
+			if(nextValue == 9) {
+				fel10TrailSet.add((x) + "," + (y+1));
+				//System.out.println("OK - " + (x) + "," + (y + 1) );
+				fel10AllTrailCnt++;
+			} else {
+				fel10aMove(x, y + 1, nextValue, heightMatrix, xSize, ySize);
+			}
+		}
+		
+	}
+	
+	private static boolean fel10aValidMove(int x, int y, int nextValue, int[][] heightMatrix, int xSize, int ySize) {
+		if(x >= 0 && x < xSize && y >= 0 && y < ySize && heightMatrix[y][x] == nextValue) {
+			return true;
+		}
+		return false;
+	}
+
 	private static void fel9a() throws IOException {
 		List<String> lines = FileUtils.readLines(new File("d:\\temp\\aoc_9_input.txt"), "UTF-8");
 		
@@ -248,6 +442,15 @@ public class AoC {
 		for(int y = 0; y < ySize; y++) {
 			for(int x = 0; x < xSize; x++) {
 				System.out.print(matrix[y][x] == '\u0000' ? '.' : matrix[y][x]);
+			}
+			System.out.println("");
+		}
+	}
+	
+	private static void printMatrix(int[][] matrix, int xSize, int ySize) {
+		for(int y = 0; y < ySize; y++) {
+			for(int x = 0; x < xSize; x++) {
+				System.out.print(matrix[y][x]);
 			}
 			System.out.println("");
 		}

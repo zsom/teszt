@@ -57,10 +57,10 @@ private static Map<Character, Character> CHAR_REPLACE = new ConcurrentHashMap<Ch
 		System.out.println("Start");
 		
 		try {
-			leftPad();
+			//leftPad();
 			//charMap();
 			//binary();
-			//listRemove();
+			listRemove();
 			//substring1();
 			//substring2();
 			//parseInt1();
@@ -132,7 +132,7 @@ private static Map<Character, Character> CHAR_REPLACE = new ConcurrentHashMap<Ch
 
 
 	private static void listRemove() {
-		ArrayList<String> list = new ArrayList<String>();
+		ArrayList<String> list = new ArrayList<String>(100);
 		
 		list.add("a");
 		list.add("b");
@@ -143,7 +143,15 @@ private static Map<Character, Character> CHAR_REPLACE = new ConcurrentHashMap<Ch
 		list.add("e");
 		list.remove(0);
 		
+		//list.add(25, "z");
+		
 		System.out.println(list);
+		
+		Integer[] inta = new Integer[100];
+		
+		inta[10] = 1010;
+		
+		System.out.println(Arrays.toString(inta));
 		
 	}
 
