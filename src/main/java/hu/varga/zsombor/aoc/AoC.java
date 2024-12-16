@@ -4,10 +4,12 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -23,7 +25,7 @@ public class AoC {
 		System.out.println("Start");
 		
 		try {
-			fel11b();
+			fel16a();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -31,6 +33,697 @@ public class AoC {
 		System.out.println("Stop");
 	}
 	
+	private static void fel16a() throws IOException {
+		List<String> lines = FileUtils.readLines(new File("d:\\temp\\aoc_16_teszt1_input.txt"), "UTF-8");
+		int height = 15;
+		int width = 15;
+		
+		char[][] map = new char[height][width];
+		
+		for (int y = 0; y < lines.size();  y++) {
+			map[y] = lines.get(y).toCharArray();
+		}
+		
+		printMatrix(map, width, height);
+		
+		Coord start = null;
+		Coord end = null;
+		
+		boolean newWall;
+		do {
+			newWall = false;
+			for (int y = 0; y < height; y++) {
+				for (int x = 0; x < width; x++) {
+					switch (map[y][x]) {
+						case 'S':
+							start = new Coord(x, y);
+							break;
+	
+						case 'E':
+							end = new Coord(x, y);
+							break;	
+					
+						case '.':
+							int wallCnt = 0;
+							if(map[y-1][x] == '#' || map[y-1][x] == 'X') {wallCnt++;}
+							if(map[y+1][x] == '#' || map[y+1][x] == 'X') {wallCnt++;}
+							if(map[y][x-1] == '#' || map[y][x-1] == 'X') {wallCnt++;}
+							if(map[y][x+1] == '#' || map[y][x+1] == 'X') {wallCnt++;}
+							
+							if(wallCnt >= 3) {
+								map[y][x] = 'X';
+								newWall = true;
+							}
+							
+							break;
+						default:
+							break;
+					}
+				}
+			}
+		} while (newWall);
+		
+		printMatrix(map, width, height);
+		
+		char curDir = '>';
+		
+	}
+	
+	private static void fel15a() throws IOException {
+		/*
+		List<String> lines = FileUtils.readLines(new File("d:\\temp\\aoc_15_teszt2_input.txt"), "UTF-8");
+		int height = 8;
+		int width = 8;
+		*/
+		
+		/*
+		List<String> lines = FileUtils.readLines(new File("d:\\temp\\aoc_15_teszt_input.txt"), "UTF-8");
+		int height = 10;
+		int width = 10;
+		*/
+		
+		List<String> lines = FileUtils.readLines(new File("d:\\temp\\aoc_15_input.txt"), "UTF-8");
+		int height = 50;
+		int width = 50;
+		
+		char[][] map = new char[height][width];
+		StringBuilder orders = new StringBuilder();
+		
+		int lineIndex = 0;
+		
+		Coord robot = null;
+		
+		for (String line : lines) {
+			if(line.startsWith("#")) {
+				map[lineIndex] = line.toCharArray();
+				
+				int robotPos = line.indexOf('@');
+				if(robotPos > -1) {
+					robot = new Coord(robotPos, lineIndex);
+				}
+				lineIndex++;
+			} else {
+				orders.append(line);
+			}
+		}
+		
+		printMatrix(map, width, height);
+		//System.out.println("robot: " + robot);
+		
+		Coord nextPos = null;
+		for(int i = 0; i < orders.length(); i++) {
+			char dir = orders.charAt(i);
+			
+			System.out.println(i + ". dir: " + dir);
+			
+			switch (dir) {
+				case '<':
+					nextPos = new Coord(robot.x - 1, robot.y);
+					break;
+	
+				case '>':
+					nextPos = new Coord(robot.x + 1, robot.y);
+					break;
+					
+				case '^':
+					nextPos = new Coord(robot.x, robot.y - 1);
+					break;
+					
+				case 'v':
+					nextPos = new Coord(robot.x, robot.y + 1);
+					break;
+			}
+			
+			
+			char nextItem = map[nextPos.y][nextPos.x];
+			
+			switch (nextItem) {
+				case '.':
+					map[robot.y][robot.x] = '.';
+					robot = nextPos;
+					map[robot.y][robot.x] = '@';
+					
+					break;
+				case '#':
+					break;
+				case 'O':
+					if(fel15aMoveBox(nextPos, dir, map)) {
+						map[robot.y][robot.x] = '.';
+						robot = nextPos;
+						map[robot.y][robot.x] = '@';
+					}
+					break;
+			}
+			//printMatrix(map, width, height);
+		}
+		
+		int sumGPS = 0;
+		for (int y = 0; y < height; y++) {
+			for (int x = 0; x < width; x++) {
+				if(map[y][x] == 'O') {
+					sumGPS += 100 * y + x;
+				}
+			}
+		}
+		
+		System.out.println("sumGPS: " + sumGPS);
+	}
+
+	private static boolean fel15aMoveBox(Coord boxPos, char dir, char[][] map) {
+		Coord nextPos = null;
+		switch (dir) {
+			case '<':
+				nextPos = new Coord(boxPos.x - 1, boxPos.y);
+				break;
+	
+			case '>':
+				nextPos = new Coord(boxPos.x + 1, boxPos.y);
+				break;
+				
+			case '^':
+				nextPos = new Coord(boxPos.x, boxPos.y - 1);
+				break;
+				
+			case 'v':
+				nextPos = new Coord(boxPos.x, boxPos.y + 1);
+				break;
+		}
+		
+		char nextItem = map[nextPos.y][nextPos.x];
+		
+		switch (nextItem) {
+			case '.':
+				map[boxPos.y][boxPos.x] = '.';
+				boxPos = nextPos;
+				map[boxPos.y][boxPos.x] = 'O';
+				return true;
+			case '#':
+				return false;
+			case 'O':
+				if(fel15aMoveBox(nextPos, dir, map)) {
+					map[boxPos.y][boxPos.x] = '.';
+					boxPos = nextPos;
+					map[boxPos.y][boxPos.x] = 'O';
+					return true;
+				}
+				break;
+		}
+		return false;
+	}
+
+	private static void fel14b() throws IOException {
+		List<String> lines = FileUtils.readLines(new File("d:\\temp\\aoc_14_input.txt"), "UTF-8");
+		
+		Pattern p = Pattern.compile("p=(.+),(.+) v=(.+),(.+)");
+		Matcher m = null;
+		
+		
+		int width = 101;
+		int height = 103;
+		
+		ArrayList<int[]> coordsList = new ArrayList<int[]>();
+		
+		for (String line : lines) {
+			//String line = "p=2,4 v=2,-3";
+			m = p.matcher(line);
+			
+			m.find();
+			
+			int[] coords = new int[4];
+			
+			coords[0] = Integer.parseInt(m.group(1));
+			coords[1] = Integer.parseInt(m.group(2));
+			coords[2] = Integer.parseInt(m.group(3));
+			coords[3] = Integer.parseInt(m.group(4));
+			
+			coordsList.add(coords);
+		}
+		
+		int steps = 100000;
+		
+		int[] stepArray= new int[] {7083, 17486, 27889, 38292, 48695, 59098, 69501, 79904, 90307};
+			
+		//for(int s = 0; s < steps; s++) {
+		
+		for(int sai = 0; sai < stepArray.length; sai++) {
+			int s = stepArray[sai];
+			
+			char[][] map = new char[height][width];
+			for (int y = 0; y < height; y++) {
+				for (int x = 0; x < width; x++) {
+					map[y][x] = '.';
+				}
+			}
+			
+			for (int[] coords : coordsList) {
+				int xEnd = (coords[0] + s * coords[2]) % width;
+				int yEnd = (coords[1] + s * coords[3]) % height;
+				
+				if(xEnd < 0) {xEnd += width;}
+				if(yEnd < 0) {yEnd += height;}
+				
+				map[yEnd][xEnd] = '#';
+			}
+			
+			System.out.println("s: " + s);
+			
+			printMatrix(map, width, height);
+			
+			/*
+			int[] rowCnts = new int[height];
+
+			for (int y = 0; y < height; y++) {
+				for (int x = 0; x < width; x++) {
+					if(map[y][x] != '.'){
+						rowCnts[y] = rowCnts[y]+1;	
+					}
+				}
+			}	
+			*/
+			
+			/*
+			for (int y = 4; y < height; y++) {
+				for (int x = 0; x < width - 7; x++) {
+					if(map[y][x] == '#' && 
+						map[y][x+1] == '#' &&
+						map[y][x+2] == '#' && 
+						map[y][x+3] == '#' && 
+						map[y][x+4] == '#' && 
+						map[y][x+5] == '#' && 
+						map[y][x+1] == '#') {
+					
+						if(map[y-1][x+1] == '#' &&
+							map[y-1][x+2] == '#' &&
+							map[y-1][x+3] == '#' &&
+							map[y-1][x+4] == '#' &&
+							map[y-1][x+5] == '#') {
+							
+							System.out.println("step: " + s);
+							//printMatrix(map, width, height);
+						}
+					}
+					
+				}
+			}
+			*/
+		}	
+		
+		//printMatrix(map, width, height);
+		
+	}
+	
+	private static void fel14a() throws IOException {
+		List<String> lines = FileUtils.readLines(new File("d:\\temp\\aoc_14_input.txt"), "UTF-8");
+		
+		Pattern p = Pattern.compile("p=(.+),(.+) v=(.+),(.+)");
+		Matcher m = null;
+		
+		int steps = 100;
+		int width = 101;
+		int height = 103;
+		
+		int xMiddle = (width - 1) / 2;
+		int yMiddle = (height -1) / 2;
+		
+		int q1Cnt = 0;
+		int q2Cnt = 0;
+		int q3Cnt = 0;
+		int q4Cnt = 0;
+		
+		char[][] map = new char[height][width];
+		for (int y = 0; y < height; y++) {
+			for (int x = 0; x < width; x++) {
+				map[y][x] = '.';
+			}
+		}
+		
+		for (String line : lines) {
+			//String line = "p=2,4 v=2,-3";
+			m = p.matcher(line);
+			
+			m.find();
+			//System.out.println(m.group(1) + ", " + m.group(2) + "; " + m.group(3) + ", " + m.group(4));
+			
+			
+			int xStart = Integer.parseInt(m.group(1));
+			int yStart = Integer.parseInt(m.group(2));
+			int xVector = Integer.parseInt(m.group(3));
+			int yVector = Integer.parseInt(m.group(4));
+			
+			
+			int xEnd = (xStart + steps * xVector) % width;
+			int yEnd = (yStart + steps * yVector) % height;
+			
+			if(xEnd < 0) {xEnd += width;}
+			if(yEnd < 0) {yEnd += height;}
+			
+			//System.out.println("end: " + xEnd + ", " + yEnd);
+			
+			/*
+			if(map[yEnd][xEnd] == '.') {
+				map[yEnd][xEnd] = '1';
+			} else {
+				map[yEnd][xEnd] = ("" + (Integer.parseInt("" + map[yEnd][xEnd]) + 1)).charAt(0);
+			}*/
+			
+			map[yEnd][xEnd] = '#';
+			
+			
+			
+			if(xEnd > xMiddle) {
+				if(yEnd > yMiddle) {
+					q4Cnt++;
+				} 
+				if(yEnd < yMiddle) {
+					q2Cnt++;
+				}
+			} 
+			
+			if(xEnd < xMiddle) {
+				if(yEnd > yMiddle) {
+					q3Cnt++;
+				} 
+				if(yEnd < yMiddle) {
+					q1Cnt++;
+				}
+			}
+			
+		}
+		
+		//printMatrix(map, width, height);
+		System.out.println("q1: " + q1Cnt + ", q2: " + q2Cnt + ", q3: " + q3Cnt + ", q4: " + q4Cnt + "; factor: " + (q1Cnt * q2Cnt * q3Cnt * q4Cnt));
+		
+	}
+
+	private static void fel13b() throws IOException {
+		List<String> lines = FileUtils.readLines(new File("d:\\temp\\aoc_13_input.txt"), "UTF-8");
+		
+		Pattern p = Pattern.compile("\\+(\\d+).*\\+(\\d+)");
+		Pattern p2 = Pattern.compile("\\=(\\d+).*\\=(\\d+)");
+		Matcher m = null;
+		Matcher m2 = null;
+		
+		int lineCnt = 0;
+		
+		Coord a = null;
+		Coord b = null;
+		LongCoord prize = null;
+		
+		long sumCost = 0;
+		
+		for (String line : lines) {
+			lineCnt++;
+			
+			//System.out.println(lineCnt + ": " + line);
+			
+			switch (lineCnt % 4) {
+				case 1:
+					m = p.matcher(line);
+					m.find();
+					a = new Coord(Integer.parseInt(m.group(1)), Integer.parseInt(m.group(2)));
+					break;
+				
+				case 2:
+					m = p.matcher(line);
+					m.find();
+					b = new Coord(Integer.parseInt(m.group(1)), Integer.parseInt(m.group(2)));
+					break;
+
+				case 3:
+					m2 = p2.matcher(line);
+					m2.find();
+					prize = new LongCoord(Long.parseLong("10000000000000" + m2.group(1)), Long.parseLong("10000000000000" + m2.group(2)));
+					
+					System.out.println("A: " + a + "; B: " + b + ", prize: " + prize);
+					
+					sumCost += fel13bGetCost(a, b, prize);
+					
+					break;
+					
+				default:
+					break;
+			}
+		}
+
+		System.out.println("sumCost: " + sumCost);
+	
+	}
+	
+	private static long fel13bGetCost(Coord a, Coord b, LongCoord prize) {
+		ArrayList<LongCoord> results = new ArrayList<LongCoord>();
+		
+		ArrayList<Long> costs = new ArrayList<Long>();
+		
+		for(long i = 0; i < 2000000000000000000L; i++) {
+			if((prize.x - i * a.x) % b.x == 0) {
+				long j = (prize.x - i * a.x) / b.x;
+				
+				if(i * a.y + j * b.y == prize.y) {
+					System.out.println("A: " + i + "; B: " + j);
+					results.add(new LongCoord(i, j));
+					
+					costs.add(3 * i + j);
+				}
+			}
+			
+			if(i * a.x > prize.x) {
+				break;
+			}
+		}
+		
+		if(costs.isEmpty()) {
+			return 0;
+		}
+		
+		return Collections.max(costs);
+	}
+	
+	private static void fel13a() throws IOException {
+		List<String> lines = FileUtils.readLines(new File("d:\\temp\\aoc_13_input.txt"), "UTF-8");
+		
+		Pattern p = Pattern.compile("\\+(\\d+).*\\+(\\d+)");
+		Pattern p2 = Pattern.compile("\\=(\\d+).*\\=(\\d+)");
+		Matcher m = null;
+		Matcher m2 = null;
+		
+		int lineCnt = 0;
+		
+		Coord a = null;
+		Coord b = null;
+		Coord prize = null;
+		
+		int sumCost = 0;
+		
+		for (String line : lines) {
+			lineCnt++;
+			
+			//System.out.println(lineCnt + ": " + line);
+			
+			switch (lineCnt % 4) {
+				case 1:
+					m = p.matcher(line);
+					m.find();
+					a = new Coord(Integer.parseInt(m.group(1)), Integer.parseInt(m.group(2)));
+					break;
+				
+				case 2:
+					m = p.matcher(line);
+					m.find();
+					b = new Coord(Integer.parseInt(m.group(1)), Integer.parseInt(m.group(2)));
+					break;
+
+				case 3:
+					m2 = p2.matcher(line);
+					m2.find();
+					prize = new Coord(Integer.parseInt(m2.group(1)), Integer.parseInt(m2.group(2)));
+					
+					System.out.println("A: " + a + "; B: " + b + ", prize: " + prize);
+					
+					sumCost += fel13aGetCost(a, b, prize);
+					
+					break;
+					
+				default:
+					break;
+			}
+		}
+
+		System.out.println("sumCost: " + sumCost);
+	
+	}
+
+	private static int fel13aGetCost(Coord a, Coord b, Coord prize) {
+		ArrayList<Coord> results = new ArrayList<Coord>();
+		
+		ArrayList<Integer> costs = new ArrayList<Integer>();
+		
+		for(int i = 0; i < 200; i++) {
+			if((prize.x - i * a.x) % b.x == 0) {
+				int j = (prize.x - i * a.x) / b.x;
+				
+				if(i * a.y + j * b.y == prize.y) {
+					System.out.println("A: " + i + "; B: " + j);
+					results.add(new Coord(i, j));
+					
+					costs.add(3 * i + j);
+				}
+			}
+			
+			if(i * a.x > prize.x) {
+				break;
+			}
+		}
+		
+		if(costs.isEmpty()) {
+			return 0;
+		}
+		
+		return Collections.max(costs);
+	}
+
+	private static void fel12a() throws IOException {
+		List<String> lines = FileUtils.readLines(new File("d:\\temp\\aoc_12_input.txt"), "UTF-8");
+		
+		int xSize = lines.get(0).length();
+		int ySize = lines.size();
+		char[][] charMatrix = new char[ySize][xSize];
+		int[][] regionMatrix = new int[ySize][xSize];
+		
+		for (int y = 0; y < ySize; y++) {
+			String line = lines.get(y);
+			
+			for (int x = 0; x < xSize; x++) {
+				char charAt = line.charAt(x);
+				charMatrix[y][x] = charAt;
+			}
+		}
+		
+		int regionCodeIndex = 0;
+		
+		for (int y = 0; y < ySize; y++) {
+			for (int x = 0; x < xSize; x++) {
+
+				int regionCode = fel12aIsSame(x, y, charMatrix, regionMatrix, xSize, ySize);
+				
+				if(regionCode > 0) {
+					regionMatrix[y][x] = regionCode;
+				} else {
+					regionCodeIndex++;
+					regionMatrix[y][x] = regionCodeIndex;
+				}
+			}
+		}
+		
+		printMatrixPadded(regionMatrix, 2, xSize, ySize);
+		
+		HashMap<Integer, Integer> areaMap = new HashMap<Integer, Integer>();
+		HashMap<Integer, Integer> perimeterMap = new HashMap<Integer, Integer>();
+		
+		for (int y = 0; y < ySize; y++) {
+			for (int x = 0; x < xSize; x++) {
+				int regionCode = regionMatrix[y][x];
+				int perimeter = 0;
+				
+				if(y - 1 < 0 || regionMatrix[y-1][x] != regionCode) { //fent
+					perimeter++;
+				}
+				
+				if(y + 1 >= ySize || regionMatrix[y+1][x] != regionCode) { //lent
+					perimeter++;
+				}
+				
+				if(x + 1 >= xSize || regionMatrix[y][x+1] != regionCode) { //jobb
+					perimeter++;
+				}
+				
+				if(x - 1 < 0 || regionMatrix[y][x-1] != regionCode) { //bal
+					perimeter++;
+				}
+				
+				fel12aIncMap(areaMap, regionCode, 1);
+				fel12aIncMap(perimeterMap, regionCode, perimeter);
+			}
+		}
+		
+		int sumFence = 0;
+		
+		for (Map.Entry<Integer, Integer> entry : areaMap.entrySet()) {
+			Integer key = entry.getKey();
+			Integer area = entry.getValue();
+			Integer perimeter = perimeterMap.get(key);
+			
+			int fence = area * perimeter;
+			sumFence += fence;
+		
+			System.out.println(key + ": area: " + area + "; peri: " + perimeter + "; fence: " + fence);
+			
+		}
+		
+		System.out.println("sumFence: " + sumFence);
+	}
+	
+	
+	private static void fel12aIncMap(HashMap<Integer, Integer> map, int key, int incValue) {
+		Integer value = map.get(key);
+		
+		if(value == null) {
+			map.put(key, incValue);
+		} else {
+			map.put(key, value + incValue);
+		}
+		
+	}
+
+	private static int fel12aIsSame(int x, int y, char[][] charMatrix, int[][] regionMatrix, int xSize, int ySize) {
+		char currChar = charMatrix[y][x];
+		
+		int topRegionCode = -1;
+		int leftRegionCode = -1;
+		
+		Character left = null;
+		try {
+			left = charMatrix[y][x-1];
+		} catch (Exception e) {
+		}
+		
+		Character top = null;
+		try {
+			top = charMatrix[y-1][x];
+		} catch (Exception e) {
+		}
+		
+		if(top != null && top == currChar) {
+			topRegionCode = regionMatrix[y-1][x];
+		}
+		
+		if(left != null && left == currChar) {
+			leftRegionCode = regionMatrix[y][x-1];
+		}
+		
+		if(leftRegionCode > 0 && topRegionCode > 0 && leftRegionCode != topRegionCode) {
+			//egyesites
+			
+			fel12aReplaceRegion(leftRegionCode, topRegionCode, regionMatrix, xSize, ySize);
+			
+			return topRegionCode;
+		}
+		
+		
+		
+		return Math.max(leftRegionCode, topRegionCode);
+	}
+
+	private static void fel12aReplaceRegion(int fromCode, int toCode, int[][] regionMatrix, int xSize, int ySize) {
+		for (int y = 0; y < ySize; y++) {
+			for (int x = 0; x < xSize; x++) {
+				if(regionMatrix[y][x] == fromCode) {
+					regionMatrix[y][x] = toCode;
+				}
+			}
+		}
+		
+	}
+
 	private static void fel11b() {
 		String input = "125 17";
 		//String input = "5 62914 65 972 0 805922 6521 1639064";
@@ -442,6 +1135,15 @@ public class AoC {
 		for(int y = 0; y < ySize; y++) {
 			for(int x = 0; x < xSize; x++) {
 				System.out.print(matrix[y][x] == '\u0000' ? '.' : matrix[y][x]);
+			}
+			System.out.println("");
+		}
+	}
+	
+	private static void printMatrixPadded(int[][] matrix, int padNum, int xSize, int ySize) {
+		for(int y = 0; y < ySize; y++) {
+			for(int x = 0; x < xSize; x++) {
+				System.out.print(StringUtils.leftPad("" + matrix[y][x], padNum, '0') + "|");
 			}
 			System.out.println("");
 		}
@@ -1300,6 +2002,21 @@ public class AoC {
 		private int y;
 		
 		public Coord(int x, int y) {
+			this.x = x;
+			this.y = y;
+		}
+		
+		@Override
+		public String toString() {
+			return x + ";" + y;
+		}
+	}
+	
+	private static class LongCoord{
+		private long x;
+		private long y;
+		
+		public LongCoord(long x, long y) {
 			this.x = x;
 			this.y = y;
 		}

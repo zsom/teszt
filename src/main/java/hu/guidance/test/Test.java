@@ -57,10 +57,12 @@ private static Map<Character, Character> CHAR_REPLACE = new ConcurrentHashMap<Ch
 		System.out.println("Start");
 		
 		try {
+			mod();
+			
 			//leftPad();
 			//charMap();
 			//binary();
-			listRemove();
+			//listRemove();
 			//substring1();
 			//substring2();
 			//parseInt1();
@@ -87,6 +89,16 @@ private static Map<Character, Character> CHAR_REPLACE = new ConcurrentHashMap<Ch
 		}
 		
 		System.out.println("Stop");
+	}
+
+
+	private static void mod() {
+		System.out.println((2 % 7));
+		System.out.println((5 % 7));
+		System.out.println((9 % 7));
+		System.out.println((-7 % 7));
+		System.out.println((-2 % 7));
+		
 	}
 
 
