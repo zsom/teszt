@@ -89,11 +89,12 @@ public class AoC {
 		
 		StringBuilder route = new StringBuilder();
 		route.append(curDir);
-		fel16aMove(start, curDir, copyMatrix(map, width, height), width, height, route);
+		Coord path = new Coord(0, 0);
+		fel16aMove(start, curDir, copyMatrix(map, width, height), width, height, route, path);
 		
 	}
 	
-	private static void fel16aMove(Coord curPos, char curDir, char[][] map, int width, int height, StringBuilder route) {
+	private static void fel16aMove(Coord curPos, char curDir, char[][] map, int width, int height, StringBuilder route, Coord path) {
 		
 		Coord[] nextPosArray = new Coord[4];
 		nextPosArray[0] = new Coord(curPos.x-1,curPos.y);
@@ -106,31 +107,40 @@ public class AoC {
 		for (int i = 0; i < nextPosArray.length; i++) {
 			Coord nextPos = nextPosArray[i];
 			char nextItem = map[nextPos.y][nextPos.x];
+			
+			char newDir = ' ';
+			switch (i) {
+				case 0:
+					newDir = '<';
+					break;
+				case 1:
+					newDir = '^';
+					break;
+				case 2:
+					newDir = '>';
+					break;
+				case 3:
+					newDir = 'v';
+					break;
+			}
+			
+			if(newDir != curDir) {
+				path.y = path.y + 1;
+			}
+			
 			switch (nextItem) {
 				case 'E':
-					System.out.println("Finish! " + route);
+					System.out.println("Finish! path:" + path);
+					map[curPos.y][curPos.x] = curDir;
 					printMatrix(map, width, height);
+					path.x = path.x + 1;
 					break;
 
 				case '.':
-					map[curPos.y][curPos.x] = 'o';
-					char newDir = ' ';
-					switch (i) {
-						case 0:
-							newDir = '<';
-							break;
-						case 1:
-							newDir = 'v';
-							break;
-						case 2:
-							newDir = '>';
-							break;
-						case 3:
-							newDir = '^';
-							break;
-					}
+					map[curPos.y][curPos.x] = curDir;
+					path.x = path.x + 1;
 					route.append(newDir);
-					fel16aMove(nextPos, newDir, copyMatrix(map, width, height), width, height, new StringBuilder(route));
+					fel16aMove(nextPos, newDir, copyMatrix(map, width, height), width, height, new StringBuilder(route), new Coord(path.x, path.y));
 					break;
 				default:
 					break;
