@@ -87,8 +87,60 @@ public class AoC {
 		
 		char curDir = '>';
 		
+		StringBuilder route = new StringBuilder();
+		route.append(curDir);
+		fel16aMove(start, curDir, copyMatrix(map, width, height), width, height, route);
+		
 	}
 	
+	private static void fel16aMove(Coord curPos, char curDir, char[][] map, int width, int height, StringBuilder route) {
+		
+		Coord[] nextPosArray = new Coord[4];
+		nextPosArray[0] = new Coord(curPos.x-1,curPos.y);
+		nextPosArray[1] = new Coord(curPos.x, curPos.y-1);
+		nextPosArray[2] = new Coord(curPos.x+1, curPos.y);
+		nextPosArray[3] = new Coord(curPos.x, curPos.y+1);
+		
+		
+		
+		for (int i = 0; i < nextPosArray.length; i++) {
+			Coord nextPos = nextPosArray[i];
+			char nextItem = map[nextPos.y][nextPos.x];
+			switch (nextItem) {
+				case 'E':
+					System.out.println("Finish! " + route);
+					printMatrix(map, width, height);
+					break;
+
+				case '.':
+					map[curPos.y][curPos.x] = 'o';
+					char newDir = ' ';
+					switch (i) {
+						case 0:
+							newDir = '<';
+							break;
+						case 1:
+							newDir = 'v';
+							break;
+						case 2:
+							newDir = '>';
+							break;
+						case 3:
+							newDir = '^';
+							break;
+					}
+					route.append(newDir);
+					fel16aMove(nextPos, newDir, copyMatrix(map, width, height), width, height, new StringBuilder(route));
+					break;
+				default:
+					break;
+			}
+			
+			
+		}
+		
+	}
+
 	private static void fel15a() throws IOException {
 		/*
 		List<String> lines = FileUtils.readLines(new File("d:\\temp\\aoc_15_teszt2_input.txt"), "UTF-8");
@@ -1138,6 +1190,16 @@ public class AoC {
 			}
 			System.out.println("");
 		}
+	}
+	
+	private static char[][] copyMatrix(char[][] matrix, int xSize, int ySize) {
+		char[][] copy = new char[ySize][xSize];
+		for(int y = 0; y < ySize; y++) {
+			for(int x = 0; x < xSize; x++) {
+				copy[y][x] = matrix[y][x];
+			}
+		}
+		return copy;
 	}
 	
 	private static void printMatrixPadded(int[][] matrix, int padNum, int xSize, int ySize) {
